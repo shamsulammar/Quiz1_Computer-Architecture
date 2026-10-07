@@ -225,14 +225,14 @@ var QUESTIONS = [
     topic: "Chapter 2 – Instruction Set Architecture, Topic: Code Density & Memory Usage",
     q: "How do CISC and RISC architectures compare regarding binary program size and memory requirements?",
     options: [
+      "CISC achieves smaller binary file sizes and efficient memory usage because single instructions perform multiple operations.",
       "RISC produces smaller binary sizes because simple instructions take fewer bytes.",
       "CISC requires more total instructions per program, resulting in higher memory usage.",
-      "CISC achieves smaller binary file sizes and efficient memory usage because single instructions perform multiple operations.",
       "RISC eliminates the need for main memory access entirely."
     ],
-    correct: 2,
+    correct: 0,
     why: "In CISC, each instruction is powerful and multi-step (e.g. MULT operating directly on memory), so fewer instructions are needed per program — smaller binaries, smaller memory footprint.",
-    whyWrong: "RISC uses simple single-cycle instructions, so complex tasks need multiple assembly lines (LOAD, LOAD, ADD, STORE) — more instructions and larger program storage, the opposite of options A and B."
+    whyWrong: "RISC uses simple single-cycle instructions, so complex tasks need multiple assembly lines (LOAD, LOAD, ADD, STORE) — more instructions and larger program storage, the opposite of options B and C."
   },
   {
     topic: "Chapter 2 – Instruction Set Architecture, Topic: Load/Store vs Memory-to-Memory",
@@ -240,10 +240,10 @@ var QUESTIONS = [
     options: [
       "CISC uses a Load/Store architecture where memory can only be accessed via explicit LOAD and STORE commands.",
       "RISC allows arithmetic execution units to manipulate operands directly inside main memory banks.",
-      "RISC operates on a register-to-register (Load/Store) model, whereas CISC supports direct memory-to-memory operations.",
-      "Neither architecture permits general-purpose registers to hold intermediate calculation results."
+      "Neither architecture permits general-purpose registers to hold intermediate calculation results.",
+      "RISC operates on a register-to-register (Load/Store) model, whereas CISC supports direct memory-to-memory operations."
     ],
-    correct: 2,
+    correct: 3,
     why: "RISC strictly enforces a Load/Store model — calculations happen between registers (LDR R1,[A]; LDR R2,[B]; ADD R3,R1,R2; STR R3,[C]). CISC x86 allows instructions like ADD EAX,[B] to touch main memory directly.",
     whyWrong: "This reverses the real rule — it's RISC that enforces Load/Store, and CISC that reaches into memory directly."
   },
@@ -252,11 +252,11 @@ var QUESTIONS = [
     q: "Which of the following best defines the role of an Instruction Set Architecture (ISA)?",
     options: [
       "The physical layout and gate-level wiring of silicon transistors.",
-      "The abstract boundary and interface between software and CPU hardware, specifying instructions, registers, and memory models visible to programmers.",
       "The specific clock frequency and power voltage settings of the motherboard.",
+      "The abstract boundary and interface between software and CPU hardware, specifying instructions, registers, and memory models visible to programmers.",
       "A proprietary compiler software tool used to translate Java code."
     ],
-    correct: 1,
+    correct: 2,
     why: "The ISA is the 'programmer's manual' and abstract interface between software and hardware — it defines the supported data types, register sets, instruction operations, addressing modes, and how main memory is managed.",
     whyWrong: "Gate-level wiring, clock/voltage settings and compiler tools are all implementation or tooling details sitting below or outside the ISA boundary."
   },
@@ -265,24 +265,24 @@ var QUESTIONS = [
     q: "How does Computer Architecture differ from Computer Organization?",
     options: [
       "Architecture deals with low-level microarchitecture, while Organization defines high-level instruction formats.",
-      "Architecture describes the functional behavior visible to software ('what'), while Organization focuses on physical component implementation ('how').",
       "Changes in Computer Organization break backwards software compatibility across processor generations.",
+      "Architecture describes the functional behavior visible to software ('what'), while Organization focuses on physical component implementation ('how').",
       "Intel x86 processors all have different architectures but share identical hardware organization."
     ],
-    correct: 1,
+    correct: 2,
     why: "Architecture is the high-level functional specification (ISA, registers, data types) that keeps software compatible. Organization is the microarchitecture underneath — control signals, ALU design, bus interconnects.",
-    whyWrong: "Option A swaps the two definitions, and C has it backwards: organization can change generation to generation precisely because architecture stays compatible."
+    whyWrong: "Option A swaps the two definitions, and option B has it backwards: organization can change generation to generation precisely because architecture stays compatible."
   },
   {
     topic: "Chapter 1 – Introduction, Topic: Four Functions of a Computer System",
     q: "Fundamentally, all operations performed by a computer system fall into which four functional categories?",
     options: [
       "Compilation, Interpretation, Encryption, and Decryption.",
-      "Data Processing, Data Storage, Data Movement, and System Control.",
       "Pipelining, Branching, Caching, and Fetching.",
-      "Analog Conversion, Digital Conversion, Signal Processing, and Modulation."
+      "Analog Conversion, Digital Conversion, Signal Processing, and Modulation.",
+      "Data Processing, Data Storage, Data Movement, and System Control."
     ],
-    correct: 1,
+    correct: 3,
     why: "The functional view of a computer system classifies every operation into four core functions: Data Processing (ALU calculations), Data Storage (RAM/disks), Data Movement (I/O and bus transfers), and Control (CU instruction management).",
     whyWrong: "The other options list real but narrower mechanisms (pipelining, encryption, signal processing) — not the four top-level functional categories."
   },
@@ -290,12 +290,12 @@ var QUESTIONS = [
     topic: "Chapter 1 – Introduction, Topic: Internal CPU Structure",
     q: "Which set of components constitutes the internal structural layout of a Central Processing Unit (CPU)?",
     options: [
-      "System Bus, Main Memory, Peripheral Devices, and Operating System.",
       "Control Unit (CU), Arithmetic and Logic Unit (ALU), Registers, and Internal CPU Interconnections.",
+      "System Bus, Main Memory, Peripheral Devices, and Operating System.",
       "Hard Disk Drive, Direct Memory Access (DMA) Controller, Power Supply Unit, and Display Adaptor.",
       "Level 3 Cache, Graphics Processing Unit (GPU), Power Management IC, and ROM."
     ],
-    correct: 1,
+    correct: 0,
     why: "The top-level CPU architecture has four internal parts: the Control Unit (directs operations), the ALU (performs calculations/logic), Registers (fast internal storage), and the internal interconnection that buses them together.",
     whyWrong: "The other options list system-level or peripheral components that sit outside the CPU itself, not its internal structure."
   },
@@ -304,13 +304,13 @@ var QUESTIONS = [
     q: "Why is instruction pipelining significantly easier to implement in RISC architectures than in CISC?",
     options: [
       "RISC instructions are variable-length and take arbitrary clock cycles to execute.",
-      "RISC relies on micro-code decoders that slow down pipeline stages.",
       "RISC uses simple, fixed-format instructions that typically execute in a single uniform clock cycle.",
+      "RISC relies on micro-code decoders that slow down pipeline stages.",
       "RISC processors eliminate hardware control units entirely."
     ],
-    correct: 2,
+    correct: 1,
     why: "Uniform instruction length and single-cycle execution let the pipeline stages (Fetch, Decode, Execute, Memory, Writeback) flow without stalls from complex, variable-length instructions.",
-    whyWrong: "Option A describes CISC, not RISC, and options B and D describe mechanisms RISC doesn't rely on or doesn't remove."
+    whyWrong: "Option A describes CISC, not RISC, and options C and D describe mechanisms RISC doesn't rely on or doesn't remove."
   },
   {
     topic: "Chapter 1 – Introduction, Topic: ARM Cortex Processor Profiles",
@@ -330,11 +330,11 @@ var QUESTIONS = [
     q: "How do modern x86 CISC processors (such as Intel Core i9 or AMD Ryzen) execute complex CISC instructions efficiently?",
     options: [
       "They execute multi-cycle CISC instructions directly in hardware without decoding.",
-      "They dynamically decode complex x86 instructions into simple micro-operations (µops) executed on a high-speed RISC-like internal core.",
       "They disable pipelining and out-of-order execution when CISC instructions are detected.",
-      "They force software developers to rewrite legacy x86 assembly code into RISC-V."
+      "They force software developers to rewrite legacy x86 assembly code into RISC-V.",
+      "They dynamically decode complex x86 instructions into simple micro-operations (µops) executed on a high-speed RISC-like internal core."
     ],
-    correct: 1,
+    correct: 3,
     why: "Modern processors combine both paradigms: a CISC x86 ISA on the outside for software compatibility, with complex instructions dynamically translated into simple µops that run on an internal, pipelined RISC-like execution engine.",
     whyWrong: "Nothing skips decoding, disables pipelining, or requires rewriting software — those would break compatibility, which is the one thing the µops approach is designed to preserve."
   }
