@@ -1,0 +1,474 @@
+<title>Computer Architecture Quiz</title>
+<style>
+/*
+  Layout concept: one question per card in a single scrollable column.
+  Each card is answer-then-reveal: pick an option, write the Answer/
+  Explanation/Reference block yourself, then flip the card to self-grade
+  against the grounded explanation. A sticky score rail tracks progress.
+*/
+:root{
+  --bg:#F7F5EF;
+  --surface:#FFFFFF;
+  --surface-sunk:#F0EDE3;
+  --border:#E2DED0;
+  --ink:#1B211F;
+  --ink-muted:#5B655F;
+  --teal:#0B5C7A;
+  --teal-deep:#08445B;
+  --green:#12975A;
+  --red:#B4402E;
+  --amber:#B8631A;
+  --font-display:'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-body:'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15191A; --surface:#1D2224; --surface-sunk:#242A2B; --border:#333B3C;
+    --ink:#ECEEE9; --ink-muted:#9AA6A0;
+    --teal:#5FB8DC; --teal-deep:#8FD2EC; --green:#5BD993; --red:#F0897A; --amber:#E8A565;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15191A; --surface:#1D2224; --surface-sunk:#242A2B; --border:#333B3C;
+  --ink:#ECEEE9; --ink-muted:#9AA6A0;
+  --teal:#5FB8DC; --teal-deep:#8FD2EC; --green:#5BD993; --red:#F0897A; --amber:#E8A565;
+  color-scheme: dark;
+}
+
+*{box-sizing:border-box;}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:var(--font-body);
+  padding-inline:20px; padding-block:40px;
+}
+.wrap{max-width:740px; margin:0 auto;}
+h1,h2,h3{text-wrap:balance; margin:0;}
+p{margin:0;}
+
+.eyebrow{
+  font-family:var(--font-display); font-size:12px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--teal);
+}
+
+header.page{display:flex; flex-direction:column; gap:10px; margin-bottom:28px;}
+header.page h1{font-size:clamp(26px,5vw,34px); font-weight:700; letter-spacing:-0.01em;}
+header.page .sub{color:var(--ink-muted); font-size:15px; max-width:62ch; line-height:1.55;}
+
+/* ---------- score rail ---------- */
+.scorebar{
+  position:sticky; top:12px; z-index:5;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  padding:10px 16px; margin-bottom:28px;
+  box-shadow:0 2px 10px rgba(0,0,0,.05);
+}
+.scorebar .label{font-family:var(--font-display); font-size:11.5px; color:var(--ink-muted); letter-spacing:.05em; text-transform:uppercase;}
+.scorebar .score{font-family:var(--font-display); font-size:20px; font-weight:600; font-variant-numeric:tabular-nums;}
+.scorebar .score b{color:var(--green);}
+.scorebar .bartrack{flex:1; height:6px; border-radius:4px; background:var(--surface-sunk); overflow:hidden; min-width:60px;}
+.scorebar .barfill{height:100%; width:0%; background:var(--teal); transition:width .25s ease;}
+.scorebar button{
+  font-family:var(--font-display); font-size:11px; letter-spacing:.05em; text-transform:uppercase;
+  background:transparent; color:var(--ink-muted); border:1px solid var(--border); border-radius:6px;
+  padding:6px 10px; cursor:pointer; white-space:nowrap;
+}
+
+/* ---------- rubric ---------- */
+.rubric{
+  background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  padding:18px 20px; margin-bottom:34px;
+}
+.rubric .eyebrow{margin-bottom:8px;}
+.rubric h2{font-size:15.5px; font-weight:700; margin-bottom:10px;}
+.rubric ol{margin:0 0 12px 0; padding-left:20px; display:flex; flex-direction:column; gap:5px; font-size:13.5px; line-height:1.55;}
+.rubric ol ul{margin-top:4px; padding-left:18px; display:flex; flex-direction:column; gap:3px; color:var(--ink-muted);}
+.rubric-format{
+  background:var(--surface-sunk); border:1px solid var(--border); border-radius:8px;
+  padding:11px 14px; font-family:var(--font-display); font-size:12px; line-height:1.85; color:var(--ink-muted);
+}
+.rubric-format b{color:var(--ink); font-weight:600;}
+.rubric-example{font-size:12.5px; color:var(--ink-muted); margin-top:9px; font-style:italic;}
+
+/* ---------- question card ---------- */
+.qcard{
+  background:var(--surface); border:1px solid var(--border); border-radius:12px;
+  padding:20px 22px; margin-bottom:20px;
+}
+.qcard-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;}
+.qnum{font-family:var(--font-display); font-size:12px; color:var(--teal);}
+.qtopic{
+  font-family:var(--font-display); font-size:11px; color:var(--ink-muted);
+  background:var(--surface-sunk); border:1px solid var(--border); border-radius:20px;
+  padding:3px 10px;
+}
+.qtext{font-size:15.5px; font-weight:600; line-height:1.5; margin-bottom:14px;}
+
+.options{display:flex; flex-direction:column; gap:8px; margin-bottom:16px;}
+.opt{
+  display:flex; align-items:flex-start; gap:10px;
+  text-align:left; width:100%;
+  background:var(--surface-sunk); border:1px solid var(--border); border-radius:8px;
+  padding:10px 12px; font-family:var(--font-body); font-size:13.5px; color:var(--ink);
+  cursor:pointer; line-height:1.45;
+}
+.opt .tag{
+  font-family:var(--font-display); font-size:11px; font-weight:600;
+  width:20px; height:20px; border-radius:50%; flex:none;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--border); color:var(--ink-muted); margin-top:1px;
+}
+.opt:hover{border-color:var(--teal);}
+.opt.selected{border-color:var(--teal); outline:1px solid var(--teal);}
+.opt.correct{background:color-mix(in srgb, var(--green) 16%, var(--surface)); border-color:var(--green);}
+.opt.correct .tag{background:var(--green); border-color:var(--green); color:#fff;}
+.opt.incorrect{background:color-mix(in srgb, var(--red) 12%, var(--surface)); border-color:var(--red);}
+.opt.incorrect .tag{background:var(--red); border-color:var(--red); color:#fff;}
+.qcard.answered .opt{cursor:default;}
+.qcard.answered .opt:not(.correct):not(.incorrect){opacity:.55;}
+
+.answer-grid{display:flex; flex-direction:column; gap:8px; margin-bottom:14px;}
+.answer-row{display:flex; flex-direction:column; gap:4px;}
+.answer-row label{font-family:var(--font-display); font-size:10.5px; color:var(--teal); letter-spacing:.05em; text-transform:uppercase;}
+.answer-row textarea, .answer-row input{
+  width:100%; font-family:var(--font-body); font-size:13px; color:var(--ink);
+  background:var(--surface-sunk); border:1px solid var(--border); border-radius:6px;
+  padding:8px 10px; resize:vertical; min-height:32px;
+}
+.answer-row textarea:focus, .answer-row input:focus{outline:2px solid var(--teal); outline-offset:1px;}
+
+.reveal-btn{
+  font-family:var(--font-display); font-size:11.5px; letter-spacing:.05em; text-transform:uppercase;
+  background:var(--teal); color:#fff; border:none; border-radius:6px;
+  padding:9px 14px; cursor:pointer;
+}
+.reveal-btn:disabled{opacity:.5; cursor:not-allowed;}
+
+.explain{
+  margin-top:14px; padding-top:14px; border-top:1px dashed var(--border);
+  font-size:13.5px; line-height:1.6;
+}
+.explain .verdict{
+  font-family:var(--font-display); font-size:12px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;
+  margin-bottom:8px;
+}
+.explain .verdict.correct-v{color:var(--green);}
+.explain .verdict.incorrect-v{color:var(--red);}
+.explain .grid{display:flex; flex-direction:column; gap:7px;}
+.explain .grid div b{color:var(--ink); font-weight:600;}
+.explain .ref{
+  font-family:var(--font-display); font-size:12px; color:var(--teal-deep); margin-top:4px;
+}
+
+footer.page{margin-top:10px; font-size:12.5px; color:var(--ink-muted); text-align:center;}
+@media (max-width:480px){
+  .scorebar{flex-wrap:wrap;}
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
+<div class="wrap">
+  <header class="page">
+    <span class="eyebrow">Computer Organization &amp; Architecture · Practice Quiz</span>
+    <h1>Chapter 1 &amp; 2 — 10-Question Quiz</h1>
+    <p class="sub">Pick an option, write your Answer / Explanation / Lecture Reference the way it must be submitted, then reveal the grounded explanation to self-grade.</p>
+  </header>
+
+  <div class="scorebar">
+    <span class="label">Score</span>
+    <span class="score"><b id="scoreNum">0</b>/10</span>
+    <div class="bartrack"><div class="barfill" id="barFill"></div></div>
+    <button id="resetAll">Reset quiz</button>
+  </div>
+
+  <section class="rubric">
+    <span class="eyebrow">How every answer gets marked</span>
+    <h2>Answer → Explanation → Lecture Reference</h2>
+    <ol>
+      <li><b>Explain your answer.</b> State the final answer, then why it's correct.</li>
+      <li>
+        <b>Reference the lecture slides</b> (or a site/video you used).
+        <ul>
+          <li>No slide/page numbers — name the chapter and topic instead.</li>
+          <li>Quote or paraphrase the concept, definition or formula you're using.</li>
+          <li>Clearly indicate the Chapter and Topic/Subtopic used.</li>
+        </ul>
+      </li>
+      <li><b>Use of evidence.</b> Connect your explanation to what that topic actually says — an answer with no reference loses marks.</li>
+    </ol>
+    <div class="rubric-format"><b>Answer:</b> [final answer]<br><b>Explanation:</b> [how you got it, why it's correct]<br><b>Lecture Reference:</b> Chapter [X] – [Chapter Title], Topic/Subtopic: [Topic]</div>
+    <p class="rubric-example">e.g. Reference: Chapter 2 – CPU Architecture, Topic: RISC and CISC.</p>
+  </section>
+
+  <div id="quizRoot"></div>
+
+  <footer class="page">Your selections and written answers are saved only in this browser tab — copy anything you want to keep before you close it.</footer>
+</div>
+
+<script>
+var QUESTIONS = [
+  {
+    topic: "Chapter 2 – Instruction Set Architecture, Topic: CISC vs RISC Trade-offs",
+    q: "What is a major hardware disadvantage of CISC architectures compared to RISC?",
+    options: [
+      "CISC requires larger physical memory storage for binary files.",
+      "Hardware complexity is increased because the CPU must support many complex, multi-cycle instructions.",
+      "CISC processors cannot support pipelining or out-of-order execution.",
+      "CISC architectures require significantly more assembly instructions per program than RISC."
+    ],
+    correct: 1,
+    why: "CISC designs emphasize complex, multi-step instructions that operate directly on memory. To execute these variable-length instructions, the CPU control unit needs intricate decoding circuits and logic — increasing hardware complexity, power consumption, and making pipelining harder.",
+    whyWrong: "CISC actually reduces program and binary size, since a single instruction performs multi-step operations. Larger binaries and higher RAM use are RISC's trade-off, not CISC's."
+  },
+  {
+    topic: "Chapter 2 – Instruction Set Architecture, Topic: Code Density & Memory Usage",
+    q: "How do CISC and RISC architectures compare regarding binary program size and memory requirements?",
+    options: [
+      "RISC produces smaller binary sizes because simple instructions take fewer bytes.",
+      "CISC requires more total instructions per program, resulting in higher memory usage.",
+      "CISC achieves smaller binary file sizes and efficient memory usage because single instructions perform multiple operations.",
+      "RISC eliminates the need for main memory access entirely."
+    ],
+    correct: 2,
+    why: "In CISC, each instruction is powerful and multi-step (e.g. MULT operating directly on memory), so fewer instructions are needed per program — smaller binaries, smaller memory footprint.",
+    whyWrong: "RISC uses simple single-cycle instructions, so complex tasks need multiple assembly lines (LOAD, LOAD, ADD, STORE) — more instructions and larger program storage, the opposite of options A and B."
+  },
+  {
+    topic: "Chapter 2 – Instruction Set Architecture, Topic: Load/Store vs Memory-to-Memory",
+    q: "What is the primary difference in how RISC and CISC architectures handle memory access for arithmetic operations?",
+    options: [
+      "CISC uses a Load/Store architecture where memory can only be accessed via explicit LOAD and STORE commands.",
+      "RISC allows arithmetic execution units to manipulate operands directly inside main memory banks.",
+      "RISC operates on a register-to-register (Load/Store) model, whereas CISC supports direct memory-to-memory operations.",
+      "Neither architecture permits general-purpose registers to hold intermediate calculation results."
+    ],
+    correct: 2,
+    why: "RISC strictly enforces a Load/Store model — calculations happen between registers (LDR R1,[A]; LDR R2,[B]; ADD R3,R1,R2; STR R3,[C]). CISC x86 allows instructions like ADD EAX,[B] to touch main memory directly.",
+    whyWrong: "This reverses the real rule — it's RISC that enforces Load/Store, and CISC that reaches into memory directly."
+  },
+  {
+    topic: "Chapter 2 – Instruction Set Architecture, Topic: Definition of ISA",
+    q: "Which of the following best defines the role of an Instruction Set Architecture (ISA)?",
+    options: [
+      "The physical layout and gate-level wiring of silicon transistors.",
+      "The abstract boundary and interface between software and CPU hardware, specifying instructions, registers, and memory models visible to programmers.",
+      "The specific clock frequency and power voltage settings of the motherboard.",
+      "A proprietary compiler software tool used to translate Java code."
+    ],
+    correct: 1,
+    why: "The ISA is the 'programmer's manual' and abstract interface between software and hardware — it defines the supported data types, register sets, instruction operations, addressing modes, and how main memory is managed.",
+    whyWrong: "Gate-level wiring, clock/voltage settings and compiler tools are all implementation or tooling details sitting below or outside the ISA boundary."
+  },
+  {
+    topic: "Chapter 1 – Introduction, Topic: Architecture vs Organization",
+    q: "How does Computer Architecture differ from Computer Organization?",
+    options: [
+      "Architecture deals with low-level microarchitecture, while Organization defines high-level instruction formats.",
+      "Architecture describes the functional behavior visible to software ('what'), while Organization focuses on physical component implementation ('how').",
+      "Changes in Computer Organization break backwards software compatibility across processor generations.",
+      "Intel x86 processors all have different architectures but share identical hardware organization."
+    ],
+    correct: 1,
+    why: "Architecture is the high-level functional specification (ISA, registers, data types) that keeps software compatible. Organization is the microarchitecture underneath — control signals, ALU design, bus interconnects.",
+    whyWrong: "Option A swaps the two definitions, and C has it backwards: organization can change generation to generation precisely because architecture stays compatible."
+  },
+  {
+    topic: "Chapter 1 – Introduction, Topic: Four Functions of a Computer System",
+    q: "Fundamentally, all operations performed by a computer system fall into which four functional categories?",
+    options: [
+      "Compilation, Interpretation, Encryption, and Decryption.",
+      "Data Processing, Data Storage, Data Movement, and System Control.",
+      "Pipelining, Branching, Caching, and Fetching.",
+      "Analog Conversion, Digital Conversion, Signal Processing, and Modulation."
+    ],
+    correct: 1,
+    why: "The functional view of a computer system classifies every operation into four core functions: Data Processing (ALU calculations), Data Storage (RAM/disks), Data Movement (I/O and bus transfers), and Control (CU instruction management).",
+    whyWrong: "The other options list real but narrower mechanisms (pipelining, encryption, signal processing) — not the four top-level functional categories."
+  },
+  {
+    topic: "Chapter 1 – Introduction, Topic: Internal CPU Structure",
+    q: "Which set of components constitutes the internal structural layout of a Central Processing Unit (CPU)?",
+    options: [
+      "System Bus, Main Memory, Peripheral Devices, and Operating System.",
+      "Control Unit (CU), Arithmetic and Logic Unit (ALU), Registers, and Internal CPU Interconnections.",
+      "Hard Disk Drive, Direct Memory Access (DMA) Controller, Power Supply Unit, and Display Adaptor.",
+      "Level 3 Cache, Graphics Processing Unit (GPU), Power Management IC, and ROM."
+    ],
+    correct: 1,
+    why: "The top-level CPU architecture has four internal parts: the Control Unit (directs operations), the ALU (performs calculations/logic), Registers (fast internal storage), and the internal interconnection that buses them together.",
+    whyWrong: "The other options list system-level or peripheral components that sit outside the CPU itself, not its internal structure."
+  },
+  {
+    topic: "Chapter 2 – Instruction Set Architecture, Topic: RISC Pipelining",
+    q: "Why is instruction pipelining significantly easier to implement in RISC architectures than in CISC?",
+    options: [
+      "RISC instructions are variable-length and take arbitrary clock cycles to execute.",
+      "RISC relies on micro-code decoders that slow down pipeline stages.",
+      "RISC uses simple, fixed-format instructions that typically execute in a single uniform clock cycle.",
+      "RISC processors eliminate hardware control units entirely."
+    ],
+    correct: 2,
+    why: "Uniform instruction length and single-cycle execution let the pipeline stages (Fetch, Decode, Execute, Memory, Writeback) flow without stalls from complex, variable-length instructions.",
+    whyWrong: "Option A describes CISC, not RISC, and options B and D describe mechanisms RISC doesn't rely on or doesn't remove."
+  },
+  {
+    topic: "Chapter 1 – Introduction, Topic: ARM Cortex Processor Profiles",
+    q: "Which ARM Cortex profile is specifically optimized for rich operating systems (e.g., Linux, Android) requiring maximum performance?",
+    options: [
+      "ARM Cortex-M profile.",
+      "ARM Cortex-R profile.",
+      "ARM Cortex-A profile.",
+      "ARM Cortex-S profile."
+    ],
+    correct: 2,
+    why: "ARM splits its architecture into three profiles: Cortex-A (Application — high-performance rich OS like Linux/Android), Cortex-R (Real-time — deterministic hard real-time systems), and Cortex-M (Microcontroller — tiny, low-power embedded devices).",
+    whyWrong: "Cortex-M targets low-power microcontrollers and Cortex-R targets real-time systems; neither is built for a full rich OS. Cortex-S isn't one of ARM's profiles."
+  },
+  {
+    topic: "Chapter 2 – Instruction Set Architecture, Topic: Modern x86 µops Translation",
+    q: "How do modern x86 CISC processors (such as Intel Core i9 or AMD Ryzen) execute complex CISC instructions efficiently?",
+    options: [
+      "They execute multi-cycle CISC instructions directly in hardware without decoding.",
+      "They dynamically decode complex x86 instructions into simple micro-operations (µops) executed on a high-speed RISC-like internal core.",
+      "They disable pipelining and out-of-order execution when CISC instructions are detected.",
+      "They force software developers to rewrite legacy x86 assembly code into RISC-V."
+    ],
+    correct: 1,
+    why: "Modern processors combine both paradigms: a CISC x86 ISA on the outside for software compatibility, with complex instructions dynamically translated into simple µops that run on an internal, pipelined RISC-like execution engine.",
+    whyWrong: "Nothing skips decoding, disables pipelining, or requires rewriting software — those would break compatibility, which is the one thing the µops approach is designed to preserve."
+  }
+];
+
+(function(){
+  var root = document.getElementById('quizRoot');
+  var letters = ['A','B','C','D'];
+  var state = QUESTIONS.map(function(){ return { picked: null, answered: false }; });
+
+  function save(){
+    try{ localStorage.setItem('ca-quiz-state', JSON.stringify(state)); }catch(e){}
+  }
+  function load(){
+    try{
+      var raw = localStorage.getItem('ca-quiz-state');
+      if(raw){
+        var parsed = JSON.parse(raw);
+        if(Array.isArray(parsed) && parsed.length === state.length) state = parsed;
+      }
+    }catch(e){}
+  }
+  load();
+
+  function updateScore(){
+    var correctCount = 0, answeredCount = 0;
+    state.forEach(function(s, i){
+      if(s.answered){
+        answeredCount++;
+        if(s.picked === QUESTIONS[i].correct) correctCount++;
+      }
+    });
+    document.getElementById('scoreNum').textContent = correctCount;
+    document.getElementById('barFill').style.width = (answeredCount/QUESTIONS.length*100) + '%';
+  }
+
+  function render(){
+    root.innerHTML = '';
+    QUESTIONS.forEach(function(item, qi){
+      var card = document.createElement('div');
+      card.className = 'qcard' + (state[qi].answered ? ' answered' : '');
+
+      var head = document.createElement('div');
+      head.className = 'qcard-head';
+      head.innerHTML = '<span class="qnum">Question ' + (qi+1) + ' / 10</span><span class="qtopic">' + item.topic.split(',')[0] + '</span>';
+      card.appendChild(head);
+
+      var qtext = document.createElement('div');
+      qtext.className = 'qtext';
+      qtext.textContent = item.q;
+      card.appendChild(qtext);
+
+      var opts = document.createElement('div');
+      opts.className = 'options';
+      item.options.forEach(function(optText, oi){
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'opt';
+        if(state[qi].answered){
+          if(oi === item.correct) b.className += ' correct';
+          else if(oi === state[qi].picked) b.className += ' incorrect';
+        } else if(oi === state[qi].picked){
+          b.className += ' selected';
+        }
+        b.innerHTML = '<span class="tag">' + letters[oi] + '</span><span>' + optText + '</span>';
+        b.addEventListener('click', function(){
+          if(state[qi].answered) return;
+          state[qi].picked = oi;
+          save();
+          render();
+        });
+        opts.appendChild(b);
+      });
+      card.appendChild(opts);
+
+      var ansKey = 'ca-quiz-written-' + qi;
+      var grid = document.createElement('div');
+      grid.className = 'answer-grid';
+      grid.innerHTML =
+        '<div class="answer-row"><label>Your explanation</label><textarea rows="2" placeholder="Why you picked this option" data-key="' + ansKey + '-exp"></textarea></div>' +
+        '<div class="answer-row"><label>Lecture reference</label><input type="text" placeholder="Chapter [X] – [Title], Topic/Subtopic: [Topic]" data-key="' + ansKey + '-ref"></div>';
+      card.appendChild(grid);
+      grid.querySelectorAll('[data-key]').forEach(function(field){
+        var k = field.getAttribute('data-key');
+        try{ var v = localStorage.getItem(k); if(v) field.value = v; }catch(e){}
+        field.addEventListener('input', function(){
+          try{ localStorage.setItem(k, field.value); }catch(e){}
+        });
+      });
+
+      if(!state[qi].answered){
+        var btn = document.createElement('button');
+        btn.className = 'reveal-btn';
+        btn.textContent = 'Check answer';
+        btn.disabled = state[qi].picked === null;
+        btn.addEventListener('click', function(){
+          state[qi].answered = true;
+          save();
+          render();
+          updateScore();
+        });
+        card.appendChild(btn);
+      } else {
+        var isCorrect = state[qi].picked === item.correct;
+        var explain = document.createElement('div');
+        explain.className = 'explain';
+        explain.innerHTML =
+          '<div class="verdict ' + (isCorrect ? 'correct-v' : 'incorrect-v') + '">' + (isCorrect ? 'Correct' : 'Not quite') + '</div>' +
+          '<div class="grid">' +
+            '<div><b>Answer:</b> ' + letters[item.correct] + ') ' + item.options[item.correct] + '</div>' +
+            '<div><b>Explanation:</b> ' + item.why + (isCorrect ? '' : ' ' + item.whyWrong) + '</div>' +
+            '<div class="ref"><b>Lecture Reference:</b> ' + item.topic + '</div>' +
+          '</div>';
+        card.appendChild(explain);
+      }
+
+      root.appendChild(card);
+    });
+  }
+
+  document.getElementById('resetAll').addEventListener('click', function(){
+    state = QUESTIONS.map(function(){ return { picked: null, answered: false }; });
+    save();
+    try{
+      QUESTIONS.forEach(function(_, qi){
+        localStorage.removeItem('ca-quiz-written-' + qi + '-exp');
+        localStorage.removeItem('ca-quiz-written-' + qi + '-ref');
+      });
+    }catch(e){}
+    render();
+    updateScore();
+  });
+
+  render();
+  updateScore();
+})();
+</script>
